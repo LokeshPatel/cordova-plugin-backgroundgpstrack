@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+	id="cordova-plugin-gpstrackbackground"
+	version="1.0.0-dev">
+	<name>Background gps track</name>
+	<description>Cordova plugin background gps track</description>
+	<license>Apache 2.0</license>
+	
+	<keywords>cordova,gpstrack,background gps track</keywords>
+	
+	 <info>Cross platform background gps track plugin for Cordova/PhoneGap</info>
+	 <repo>https://github.com/LokeshPatel/cordova-plugin-backgroundgpstrack.git</repo>
+	
+	<js-module src="www/gpsTrackHandlePlugin.js" name="CDVGPSTrack">
+		<clobbers target="navigator.gpstrack"/>
+	</js-module>
+	
+	<engines>
+        <engine name="cordova" version=">=3.0.0"/>
+    </engines>
+	<!-- android -->
+	<platform name="android">
+		<config-file target="AndroidManifest.xml" parent="/manifest/application">
+			<service android:name="com.gpstracksystem.plugin.GpsBackGroundService"  android:enabled="true" /> 
+		</config-file>
+		<config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+			<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+			<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+			<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+		</config-file>
+		<config-file target="res/xml/config.xml" parent="/*">
+			<feature name="GpsTrackHandlePlugin">
+				<param name="android-package" value="com.gpstracksystem.plugin.GpsTrackHandlePlugin" />
+			</feature>
+		</config-file>
+		<lib-file src="src/android/libs/gson-2.2.4.jar"/>   
+		<source-file src="src/android/GpsBackGroundService.java" target-dir="src/com/gpstracksystem/plugin" />
+		<source-file src="src/android/GPSTracker.java" target-dir="src/com/gpstracksystem/plugin" />
+		<source-file src="src/android/GpsTrackHandlePlugin.java" target-dir="src/com/gpstracksystem/plugin" />
+	</platform>
+</plugin>

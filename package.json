@@ -1,0 +1,27 @@
+{
+  "name": "cordova-plugin-gpstrack",
+  "version": "1.0.0-dev",
+  "description": "Cordova plugin background gps track",
+  "cordova": {
+    "id": "cordova-plugin-background-gpstrack",
+    "platforms": ["android"]
+    },
+    "repository": {
+      "type": "git",
+      "url": ""
+      },
+      "keywords": [
+      "cordova",
+      "gpstrack",
+      "background gps track",
+      "cordova-android",
+      ],
+      "engines": [
+      {
+      "name": "cordova",
+      "version": ">=3.0.0"
+       }
+      ],
+      "author": "Lokesh Patel",
+      "license": "Apache 2.0"
+    }
