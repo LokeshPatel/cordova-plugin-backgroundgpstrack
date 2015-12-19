@@ -94,8 +94,21 @@ public class GpsBackGroundService extends Service {
   {
 	   SharedPreferences sharedpreferences = returnSharedPrefrence(); 
 	   int serverValueCount = sharedpreferences.getInt("NumberOfValues", 0);
-	   final String serviceURLurl = sharedpreferences.getString("ServerURL","No name defined");
+	   final String serviceURLurl = sharedpreferences.getString("ServerURL","null");
 	   int  timeInterval = sharedpreferences.getInt("IntervalTime", 0);
+	   int BGServiceID   = sharedpreferences.getInt("BGServiceID",0);
+	   if(timeInterval == 0)
+	   { 
+		 stopSelf(BGServiceID);
+	     Toast.makeText(getApplicationContext(), "Please set time interval", Toast.LENGTH_LONG).show();
+	   }  
+	   else if(serviceURLurl == "null")
+	   {
+		     stopSelf(BGServiceID);
+		     Toast.makeText(getApplicationContext(), "Please set server url", Toast.LENGTH_LONG).show();
+	  }	
+	  else
+	  {	   
 	   int i=0;
 	   final Map<String,String> parameter = new HashMap<String, String>(); 
 	   Location oldValue = getGPSSharedPreference();
@@ -111,42 +124,41 @@ public class GpsBackGroundService extends Service {
           if(gps.location == null)
         	  return;
           Log.d("get GPS Test =======", "Your Location is - \nLat: " + latitude + "\nLong: " + longitude);
-       }else{
+          while(i<serverValueCount)
+    	  {
+    	    	String Prefrencekey = "Key"+i;
+    			String PrefrenceValueKey = "Value"+i;
+    	    	String paramskey = sharedpreferences.getString(Prefrencekey, "No name defined");
+    	    	String paramsValue = sharedpreferences.getString(PrefrenceValueKey, "No name defined");
+    	    	parameter.put(paramskey, paramsValue);
+    	    	i++;
+    	    }
+    	   final String  lat= ""+latitude;
+    	   final String  lng = ""+longitude;
+    	   Thread background = new Thread(new Runnable() {
+    	         public void run() {
+    	            try {
+    	                sendPost(serviceURLurl,parameter,lat,lng);
+    	            } catch (Throwable t) {
+    	                // just end the background thread
+    	                Log.i("Animation", "Thread  exception " + t);
+    	            }
+    	        }
+    		}); 
+    		background.start();
+         }else{
            // can't get location
            // GPS or Network is not enabled
-           // Ask user to enable GPS/network in settings
-           gps.showSettingsAlert();
-       } 
-	   while(i<serverValueCount)
-	  {
-	    	String Prefrencekey = "Key"+i;
-			String PrefrenceValueKey = "Value"+i;
-	    	String paramskey = sharedpreferences.getString(Prefrencekey, "No name defined");
-	    	String paramsValue = sharedpreferences.getString(PrefrenceValueKey, "No name defined");
-	    	parameter.put(paramskey, paramsValue);
-	    	i++;
-	    }
-	   final String  lat= ""+latitude;
-	   final String  lng = ""+longitude;
-	   Thread background = new Thread(new Runnable() {
-	         public void run() {
-	            try {
-	                sendPost(serviceURLurl,parameter,lat,lng);
-	            } catch (Throwable t) {
-	                // just end the background thread
-	                Log.i("Animation", "Thread  exception " + t);
-	            }
-	        }
-		}); 
-		background.start();
- }
+    	     stopSelf(BGServiceID);
+		     gps.showSettingsAlert();
+         } 
+	  }  
+}
   
 	  
 	  @Override
 	  public void onCreate() {
 	    // Start up the thread running the service.  Note that we create a
-	    // separate thread because the service normally runs in the process's
-	    // main thread, which we don't want to block.  We also make it
 	    // background priority so CPU-intensive work will not disrupt our UI.
 	    HandlerThread thread = new HandlerThread("ServiceStartArguments",Process.THREAD_PRIORITY_BACKGROUND);
 	    thread.start();
@@ -163,8 +175,8 @@ public class GpsBackGroundService extends Service {
 		   {
 			  stopSelf(BGServiceID);
 		   }
-          Log.d("Test ======= + ====== + ====", "Service call in background == " + intervalTime +"==="+ serviceURL +"==="+ BGServiceID);
-          updateServiceID(startId);   
+          Log.d("Test ======= + ====== + ====", "Service call in background == " + setTime +"==="+ BGServiceID);
+       	  updateServiceID(startId);   
           final Handler handler = new Handler();
           if(timer == null)
            timer = new Timer();
@@ -182,8 +194,11 @@ public class GpsBackGroundService extends Service {
  	              });
  	          }
  	       };
- 	      timer.schedule(doAsynchronousTask, 0, setTime*1000);
-          return START_STICKY;
+ 	       if(setTime != 0)
+ 	         timer.schedule(doAsynchronousTask, 0, setTime*1000);
+ 	       else
+ 	    	  timer.schedule(doAsynchronousTask, 100);
+         return START_STICKY;
 	  }
 
 	  @Override
