@@ -4,22 +4,25 @@ Cordova plugin background gps track Service With Cordova/Phonegap android applic
 
 
 
-## From master:
+## Master branch:
  
-~~ from master branch ~~
+ ```
 cordova plugin add https://github.com/LokeshPatel/cordova-plugin-backgroundgpstrack.git
+ ```
+## local folder:
 
-## from a local folder:
-
- ~~ local folder ~~
+ ``` 
 cordova plugin add cordova-plugin-backgroundgpstrack --searchpath path
 
+```
 
 ## 1) Start service 
 
- ```
- //add service value in ServerDetails like [{ "params":"id","value":"1"},{ "params":"pwd","value":"password"}, .....]
-  
+ //add service value in ServerDetails like :
+ 
+  [{ "params":"id","value":"1"},{ "params":"pwd","value":"password"}, .....]
+ 
+ ```  
    var option = { 
                "ServerDetails":[{ "params":" ","value":" "}],
               "IntervalTime":textTimeVal, // Time set in second
