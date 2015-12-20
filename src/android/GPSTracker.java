@@ -174,7 +174,7 @@ public class GPSTracker extends Service implements LocationListener {
         alertDialog.setTitle("GPS is not enabled");
   
         // Setting Dialog Message
-        alertDialog.setMessage("Please enable your location service by going to settings \n Turn on Location services option");
+        alertDialog.setMessage("Please enable your location service by going to settings \n\n Turn on Location services option");
         // on pressing cancel button
         alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {

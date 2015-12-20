@@ -20,16 +20,19 @@ cordova plugin add cordova-plugin-backgroundgpstrack --searchpath path
 
  //add service value in ServerDetails like :
  
-  [{ "params":"id","value":"1"},{ "params":"pwd","value":"password"}, .....]
+  [{ "params":"id","value":"1"},{ "params":"pwd","value":"password"}, ..... ,{ "params":"lat","value":""},{ "params":"lon","value":""}]
  
  ```  
-   var option = { 
-               "ServerDetails":[{ "params":" ","value":" "}],
-              "IntervalTime":textTimeVal, // Time set in second
-              "IntervalDistance":"100", // Now only work with 100, don't change this value.
-              "ServerURL":"http://demo.com/demo/" // add your server url
+    var option = {"ServerDetails":[{"params":"id","value":""},
+                  {"params":"lat", "value":""}, // lat & lon params key & value user params starting set blank
+                  {"params":"lon","value":"7"}],
+              "IntervalTime":"30", // Time set in second
+              "IntervalDistance":"100", // Distance set in meter "now not working distance"
+              "ServerURL":setURL, // Server url 
+              "Content-type":"application/json" // if content type based on url then used
           }
-   navigator.gpstrack.start(function(a){console.log("start")},function(){console.log("Error")},option);
+          navigator.gpstrack.start(function(a){console.log("start")},function(){console.log("Error")},option);
+     
  ``` 
   
 ## 2) Stop service 

@@ -31,8 +31,16 @@ public class GpsTrackHandlePlugin extends CordovaPlugin{
 						    String intervalTime =   data.getJSONObject(0).getString("IntervalTime");
 						    String intervalDist = data.getJSONObject(0).getString("IntervalDistance");
 						    String serverURL =  data.getJSONObject(0).getString("ServerURL");
+						    String getHeaderTypeValue = "";
+							 try{
+							    getHeaderTypeValue = data.getJSONObject(0).getString("Content-type");
+							  }
+							 catch(Exception e)
+							 {
+								 
+							 }
 						    stopActiveService(contextapp);
-							saveValueInShared(setJsonArrayValue,serverURL,intervalTime,intervalDist,contextapp);
+							saveValueInShared(setJsonArrayValue,serverURL,getHeaderTypeValue,intervalTime,intervalDist,contextapp);
 							contextapp.startService(new Intent(contextapp, GpsBackGroundService.class));
 						 }
 						 catch(JSONException e)
@@ -55,24 +63,25 @@ public class GpsTrackHandlePlugin extends CordovaPlugin{
 		return true;
 	}
 
-	public void saveValueInShared(JSONArray serverDetails,String ServerURL,String timeInterval,String distanceInterval,Context ctx) 
+	public void saveValueInShared(JSONArray serverDetails,String ServerURL,String headerTypeValue,String timeInterval,String distanceInterval,Context ctx) 
 	{
 	 try{
 		 SharedPreferences sharedpreferences = ctx.getSharedPreferences(GpsTrackHandlePlugin.Shared_FILENAME,Context.MODE_PRIVATE); 
 		 SharedPreferences.Editor editor = sharedpreferences.edit();
-		 int i =0 ;
-		 while(i<serverDetails.length())
+		 int i =serverDetails.length();
+		 while(i>0)
 		 {
+			i--;
 			String Prefrencekey = "Key"+i;
 			String PrefrenceValueKey = "Value"+i;
 			String getParams = serverDetails.getJSONObject(i).getString("params");
 			String getParamsValue = serverDetails.getJSONObject(i).getString("value");
 			editor.putString(Prefrencekey, getParams);
 			editor.putString(PrefrenceValueKey, getParamsValue);
-			i++;
 		}
-		 editor.putInt("NumberOfValues", i);
+		 editor.putInt("NumberOfValues", serverDetails.length());
 		 editor.putString("ServerURL", ServerURL);
+		 editor.putString("Content-Type", headerTypeValue);
 		 if(timeInterval!=null)
     	  {
     		  int setTime = 0;

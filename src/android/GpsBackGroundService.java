@@ -2,6 +2,7 @@ package com.gpstracksystem.plugin;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -13,6 +14,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Service;
 import android.content.ContentValues;
@@ -27,6 +35,7 @@ import android.os.Process;
 import android.util.Log;
 import android.widget.Toast;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class GpsBackGroundService extends Service {
 	  private String intervalTime,serviceURL;
@@ -37,7 +46,7 @@ public class GpsBackGroundService extends Service {
 	  static ContentValues contentvalues;
 
 	@SuppressWarnings("finally")
-	public static String sendPost(String _url,Map<String,String> parameter,String lat, String lng)  {
+	public static String sendPost(String _url,Map<String,String> parameter,String latKey,String lat, String lngKey,String lng)  {
 		final String USER_AGENT = "Mozilla/5.0";
 	    StringBuilder params=new StringBuilder("");
 	    String result="";
@@ -46,9 +55,8 @@ public class GpsBackGroundService extends Service {
 	        params.append(s+"=");
             params.append(URLEncoder.encode(parameter.get(s),"UTF-8")+"&");
 	    }
-	    params.append("lat="+lat+"&lon="+lng);
-       
-	    String url =_url;
+	    params.append(latKey+"="+lat+"&"+lngKey+"="+lng);
+        String url =_url;
 	    URL obj = new URL(_url);
 	    HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 	    con.setRequestMethod("POST");
@@ -73,8 +81,8 @@ public class GpsBackGroundService extends Service {
 	        response.append(inputLine + "\n");
 	    }
 	    in.close();
-
-	        result = response.toString();
+        result = response.toString();
+        System.out.println("final Result Service Response " +result);
 	    } catch (UnsupportedEncodingException e) {
 	        e.printStackTrace();
 	    } catch (MalformedURLException e) {
@@ -87,16 +95,52 @@ public class GpsBackGroundService extends Service {
 	    return  result;
 	    }
 }
+  
+	public void saveDetailsOnServerHeadyTpe(String uri, Map<String,String> parameter)
+	{
+		   try {
+               String json = new GsonBuilder().create().toJson(parameter, Map.class);
+		        HttpPost httpPost = new HttpPost(uri);
+		        httpPost.setEntity(new StringEntity(json));
+		        httpPost.setHeader("Accept", "application/json");
+		        httpPost.setHeader("Content-type", "application/json");
+		        HttpResponse httpResponse = null;
+		        httpResponse = new DefaultHttpClient().execute(httpPost);;
+		        HttpEntity entity = httpResponse.getEntity();
+		        if (entity != null) {
+		        	StringBuilder sb = new StringBuilder();
+		        	try {
+		        	    BufferedReader reader = 
+		        	           new BufferedReader(new InputStreamReader(entity.getContent()), 65728);
+		        	    String line = null;
+		        	    while ((line = reader.readLine()) != null) {
+		        	        sb.append(line);
+		        	    }
+		        	}
+		        	catch (IOException e) { e.printStackTrace(); }
+		        	catch (Exception e) { e.printStackTrace(); }
+                    System.out.println("final Result Service Response " + sb.toString());
+		        }
+		       
+		        
+		    } catch (UnsupportedEncodingException e) {
+		        e.printStackTrace();
+		    } catch (ClientProtocolException e) {
+		        e.printStackTrace();
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }
+	}
 	
-
-	  
   public void gpsTrackerOnDevice()
   {
 	   SharedPreferences sharedpreferences = returnSharedPrefrence(); 
 	   int serverValueCount = sharedpreferences.getInt("NumberOfValues", 0);
 	   final String serviceURLurl = sharedpreferences.getString("ServerURL","null");
+	   final String headerType = sharedpreferences.getString("Content-Type","null");
 	   int  timeInterval = sharedpreferences.getInt("IntervalTime", 0);
 	   int BGServiceID   = sharedpreferences.getInt("BGServiceID",0);
+	   
 	   if(timeInterval == 0)
 	   { 
 		 stopSelf(BGServiceID);
@@ -116,6 +160,8 @@ public class GpsBackGroundService extends Service {
        // check if GPS enabled     
 	   double latitude = 0 ;
 	   double longitude = 0;
+	   String getLatKey ="lat";
+	   String getLonKey ="lon";
 	   if(gps.canGetLocation()){
           latitude = gps.getLatitude();
           longitude = gps.getLongitude();
@@ -124,21 +170,38 @@ public class GpsBackGroundService extends Service {
           if(gps.location == null)
         	  return;
           Log.d("get GPS Test =======", "Your Location is - \nLat: " + latitude + "\nLong: " + longitude);
-          while(i<serverValueCount)
-    	  {
+          i = serverValueCount;
+          while(i>0)
+    	  {     
+        	    i--;
     	    	String Prefrencekey = "Key"+i;
     			String PrefrenceValueKey = "Value"+i;
     	    	String paramskey = sharedpreferences.getString(Prefrencekey, "No name defined");
     	    	String paramsValue = sharedpreferences.getString(PrefrenceValueKey, "No name defined");
-    	    	parameter.put(paramskey, paramsValue);
-    	    	i++;
-    	    }
+    	    	if(i == serverValueCount - 1)
+    	    		getLonKey   = paramskey;
+    	    	else if(i == serverValueCount - 2)
+    	    		getLatKey = paramskey;
+    	    	else 
+    	    	  parameter.put(paramskey, paramsValue);
+    	   }
     	   final String  lat= ""+latitude;
     	   final String  lng = ""+longitude;
+    	   final String  setLatKey= ""+getLatKey;
+    	   final String  setLonKey = ""+getLonKey;
     	   Thread background = new Thread(new Runnable() {
     	         public void run() {
     	            try {
-    	                sendPost(serviceURLurl,parameter,lat,lng);
+    	            	if(headerType.equalsIgnoreCase("application/json"))
+    	            	{
+    	            		parameter.put(setLatKey, lat);
+    	            		parameter.put(setLonKey, lng);
+    	            		saveDetailsOnServerHeadyTpe(serviceURLurl,parameter);
+    	            	}	
+    	            	else
+    	            	{	
+    	            	  sendPost(serviceURLurl,parameter,setLatKey,lat,setLonKey,lng);
+    	            	}  
     	            } catch (Throwable t) {
     	                // just end the background thread
     	                Log.i("Animation", "Thread  exception " + t);
