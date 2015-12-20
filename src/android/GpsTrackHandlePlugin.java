@@ -22,10 +22,11 @@ public class GpsTrackHandlePlugin extends CordovaPlugin{
 	@Override
 	public boolean execute(final String action, final JSONArray data,final CallbackContext callbackContext) {
 		    contextapp = this.cordova.getActivity().getApplicationContext();
+		    gpsTrackHandleContext = callbackContext;
  		    if ("start".equals(action)) {
+ 		    	//GpsTrackHandlePlugin.sendEvent("start");
  		    	cordova.getThreadPool().execute(new Runnable() {
 					public void run() {
-						gpsTrackHandleContext = callbackContext;
 						 try{
 							JSONArray setJsonArrayValue =  data.getJSONObject(0).getJSONArray("ServerDetails");
 						    String intervalTime =   data.getJSONObject(0).getString("IntervalTime");
@@ -47,20 +48,22 @@ public class GpsTrackHandlePlugin extends CordovaPlugin{
 						 {}
 						}
 					});
- 		    	
  		} else if ("stop".equals(action)) {
-		 	cordova.getThreadPool().execute(new Runnable() {
+ 			cordova.getThreadPool().execute(new Runnable() {
 				public void run() {
 					 stopActiveService(contextapp);
 				}
 			});
-			GpsTrackHandlePlugin.sendEvent("stop");
+			
 		}else {
 			Log.e(LOG_TAG, "Invalid action : " + action);
 			callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
 			return false;
 		}
-		return true;
+ 		    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,action);
+ 		    pluginResult.setKeepCallback(true);
+ 			gpsTrackHandleContext.sendPluginResult(pluginResult);
+ 	   	return true;
 	}
 
 	public void saveValueInShared(JSONArray serverDetails,String ServerURL,String headerTypeValue,String timeInterval,String distanceInterval,Context ctx) 
@@ -127,13 +130,13 @@ public class GpsTrackHandlePlugin extends CordovaPlugin{
 		}
 	}
 	
-	public static void sendEvent(String _string) {
-		PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,_string);
-		pluginResult.setKeepCallback(true);
-		if (gpsTrackHandleContext != null) {
-			gpsTrackHandleContext.sendPluginResult(pluginResult);
-		}
-	}
+//	public static void sendEvent(String _string) {
+//		PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,_string);
+//		pluginResult.setKeepCallback(true);
+//		if (gpsTrackHandleContext != null) {
+//			gpsTrackHandleContext.sendPluginResult(pluginResult);
+//		}
+//	}
 
 	public static void sendError(String message) {
 		PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR,
