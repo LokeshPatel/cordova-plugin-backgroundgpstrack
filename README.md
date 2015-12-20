@@ -25,7 +25,7 @@ cordova plugin add cordova-plugin-backgroundgpstrack --searchpath path
  ```  
     var option = {"ServerDetails":[{"params":"id","value":""},
                   {"params":"lat", "value":""}, // lat & lon params key & value user params starting set blank
-                  {"params":"lon","value":"7"}],
+                  {"params":"lon","value":""}],
               "IntervalTime":"30", // Time set in second
               "IntervalDistance":"100", // Distance set in meter "now not working distance"
               "ServerURL":setURL, // Server url 
