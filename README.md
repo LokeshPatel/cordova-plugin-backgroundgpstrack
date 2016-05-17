@@ -16,7 +16,18 @@ cordova plugin add cordova-plugin-backgroundgpstrack --searchpath path
 
 ```
 
-## 1) Start service 
+
+## 1) Get Current Location
+  ```
+  navigator.gpstrack.getCurrentLocation(function(result){
+     console.log(result.latitude + " == "+result.longitude );
+   },function(e){
+    console.log("Error" + e);
+    });
+  
+  
+```
+## 2) Start service 
 
  //add service value in ServerDetails like :
  
@@ -35,8 +46,9 @@ cordova plugin add cordova-plugin-backgroundgpstrack --searchpath path
      
  ``` 
   
-## 2) Stop service 
+## 3) Stop service 
   ```
   navigator.gpstrack.stop(function(a){console.log("stop")},function(){console.log("Error")});
   
 ```
+
