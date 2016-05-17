@@ -33,7 +33,7 @@ cordova plugin add cordova-plugin-backgroundgpstrack --searchpath path
   [{latitude: "",longitude: "","params1":"value","params2":"value","params3":"value","params4":"value", ......}]
  ```  
     var option = { "ServerDetails":[{latitude: "",longitude: "",  .....}],
-                   "IntervalTime": 60*15, // Time set in second
+                   "IntervalTime": 60, // Time set in second default time one min.
                    "IntervalDistance":"100", // Distance set in meter "now not working distance"
                    "ServerURL": setUrl //Server URL
                   };
