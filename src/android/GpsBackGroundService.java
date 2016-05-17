@@ -46,17 +46,37 @@ public class GpsBackGroundService extends Service {
 	  static ContentValues contentvalues;
 
 	@SuppressWarnings("finally")
-	public static String sendPost(String _url,Map<String,String> parameter,String latKey,String lat, String lngKey,String lng)  {
+	public static String sendPost(String _url,Map<String,String> parameter)  {
 		final String USER_AGENT = "Mozilla/5.0";
 	    StringBuilder params=new StringBuilder("");
 	    String result="";
+	    String getLatKey ="latitude";
+		String getLonKey ="longitude";
 	    try {
-	    for(String s:parameter.keySet()){
-	        params.append(s+"=");
-            params.append(URLEncoder.encode(parameter.get(s),"UTF-8")+"&");
+	    	int i = 0;
+	     String value ="";
+	     for(String s:parameter.keySet()){
+	    	if(s.equalsIgnoreCase(getLatKey))
+	    	{
+	          value = parameter.get(s);
+	    	}	
+	    	else if(s.equalsIgnoreCase(getLonKey))
+	    	{
+	           value = parameter.get(s);
+	    	}
+	    	else
+	    	{
+	            value = URLEncoder.encode(parameter.get(s),"UTF-8");
+	    	}
+	       if(i==0)
+	    	 params.append(s+"=");
+	       else
+	    	 params.append("&"+s+"=");
+             
+	       params.append(value);
+          i++;
 	    }
-	    params.append(latKey+"="+lat+"&"+lngKey+"="+lng);
-        String url =_url;
+	    String url =_url;
 	    URL obj = new URL(_url);
 	    HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 	    con.setRequestMethod("POST");
@@ -140,7 +160,6 @@ public class GpsBackGroundService extends Service {
 	   final String headerType = sharedpreferences.getString("Content-Type","null");
 	   int  timeInterval = sharedpreferences.getInt("IntervalTime", 0);
 	   int BGServiceID   = sharedpreferences.getInt("BGServiceID",0);
-	   
 	   if(timeInterval == 0)
 	   { 
 		 stopSelf(BGServiceID);
@@ -155,52 +174,48 @@ public class GpsBackGroundService extends Service {
 	  {	   
 	   int i=0;
 	   final Map<String,String> parameter = new HashMap<String, String>(); 
-	   Location oldValue = getGPSSharedPreference();
+	   Location oldValue = null; //getGPSSharedPreference();
 	   gps = new GPSTracker(getApplicationContext(),timeInterval,setDistance,oldValue);
        // check if GPS enabled     
 	   double latitude = 0 ;
 	   double longitude = 0;
-	   String getLatKey ="lat";
-	   String getLonKey ="lon";
+	   String getLatKey ="latitude";
+	   String getLonKey ="longitude";
 	   if(gps.canGetLocation()){
           latitude = gps.getLatitude();
           longitude = gps.getLongitude();
-          saveGPSSharedPreference(gps.location);
-          // \n is for new line
+        //  saveGPSSharedPreference(gps.location);
           if(gps.location == null)
         	  return;
           Log.d("get GPS Test =======", "Your Location is - \nLat: " + latitude + "\nLong: " + longitude);
-          i = serverValueCount;
-          while(i>0)
-    	  {     
-        	    i--;
-    	    	String Prefrencekey = "Key"+i;
-    			String PrefrenceValueKey = "Value"+i;
-    	    	String paramskey = sharedpreferences.getString(Prefrencekey, "No name defined");
-    	    	String paramsValue = sharedpreferences.getString(PrefrenceValueKey, "No name defined");
-    	    	if(i == serverValueCount - 1)
-    	    		getLonKey   = paramskey;
-    	    	else if(i == serverValueCount - 2)
-    	    		getLatKey = paramskey;
-    	    	else 
-    	    	  parameter.put(paramskey, paramsValue);
-    	   }
-    	   final String  lat= ""+latitude;
-    	   final String  lng = ""+longitude;
-    	   final String  setLatKey= ""+getLatKey;
-    	   final String  setLonKey = ""+getLonKey;
+          Map<String,?> keys = sharedpreferences.getAll();
+            for(Map.Entry<String,?> entry : keys.entrySet()){
+            	String paramskey = entry.getKey();
+            	String paramsValue = entry.getValue().toString();
+                String value[] = paramskey.split("_");
+                if(value.length > 1)
+                {	 if(value[1].equalsIgnoreCase("#value#"))
+                      {
+                    	if(value[0].equalsIgnoreCase(getLatKey)) // "latitude":"","longitude":""
+                	        parameter.put(getLatKey, ""+latitude);
+                    	else if(value[0].equalsIgnoreCase(getLonKey)) 
+                    		 parameter.put(getLonKey, ""+longitude);
+                    	else
+                    		 parameter.put(value[0], paramsValue);
+                      }	 
+                    Log.d("map values",entry.getKey() + ": " +  entry.getValue().toString());
+                } 	
+           }
     	   Thread background = new Thread(new Runnable() {
     	         public void run() {
     	            try {
     	            	if(headerType.equalsIgnoreCase("application/json"))
     	            	{
-    	            		parameter.put(setLatKey, lat);
-    	            		parameter.put(setLonKey, lng);
     	            		saveDetailsOnServerHeadyTpe(serviceURLurl,parameter);
     	            	}	
     	            	else
     	            	{	
-    	            	  sendPost(serviceURLurl,parameter,setLatKey,lat,setLonKey,lng);
+    	            	  sendPost(serviceURLurl,parameter);
     	            	}  
     	            } catch (Throwable t) {
     	                // just end the background thread
@@ -292,24 +307,4 @@ public class GpsBackGroundService extends Service {
 		 return getApplicationContext().getSharedPreferences(GpsTrackHandlePlugin.Shared_FILENAME, Context.MODE_PRIVATE);
 	  }
 	  
-	  public void saveGPSSharedPreference(Location addLocation)
-	  {
-		  SharedPreferences sharedpreferences = getApplicationContext().getSharedPreferences(GpsTrackHandlePlugin.Shared_GPS_FILENAME, Context.MODE_PRIVATE);
-		  SharedPreferences.Editor editor = sharedpreferences.edit();
-		  Gson gson = new Gson();
-		  String json = gson.toJson(addLocation);
-		  editor.putString("locationObject", json);
-		  editor.commit();  
-	 }
-	  
-	 public Location getGPSSharedPreference()
-	 {
-		  SharedPreferences sharedpreferences = getApplicationContext().getSharedPreferences(GpsTrackHandlePlugin.Shared_GPS_FILENAME, Context.MODE_PRIVATE);
-		  Gson gson = new Gson();
-		  String json = sharedpreferences.getString("locationObject", "");
-		  if(json!="")
-		  return gson.fromJson(json, Location.class);
-		  else
-		  return null;
-	 }
  }
