@@ -44,8 +44,13 @@ public class GPSTracker extends Service implements LocationListener {
     	this.mContext = context;
         getLocation(setTime,setDistance,oldlocation);
     }
- 
-    public Location getLocation(final int setTime,final long setDistance,final Location oldlocation) {
+  
+    public GPSTracker(Context context) {
+    	this.mContext = context;
+		// TODO Auto-generated constructor stub
+	}
+
+	public Location getLocation(final int setTime,final long setDistance,final Location oldlocation) {
         try {
             locationManager = (LocationManager) mContext
                     .getSystemService(LOCATION_SERVICE);
@@ -109,6 +114,34 @@ public class GPSTracker extends Service implements LocationListener {
  
         return location;
     }
+    
+    public Boolean getLocationEnable() {
+    
+    	Boolean retrunValue = false;
+    	try {
+            locationManager = (LocationManager) mContext
+                    .getSystemService(LOCATION_SERVICE);
+            // getting GPS status
+            isGPSEnabled = locationManager
+                    .isProviderEnabled(LocationManager.GPS_PROVIDER);
+            // getting network status
+            isNetworkEnabled = locationManager
+                    .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            if (!isGPSEnabled && !isNetworkEnabled) {
+            	 retrunValue = false; 
+            } 
+            else {
+            	retrunValue = true;	
+            }
+        } catch (Exception e) {
+        	retrunValue = false;
+        	e.printStackTrace();
+        }
+ 
+        return retrunValue;
+    }
+     
+    
      
     /**
      * Stop using GPS listener
