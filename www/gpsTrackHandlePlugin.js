@@ -5,6 +5,12 @@ var gpsTrackHandlePlugin = {
 	},
 	stop:function(success,fail) {
 		return cordova.exec(success,fail,"GpsTrackHandlePlugin","stop",[""]);
-	}
+	},
+	getCurrentLocation:function(success,fail) {
+               return cordova.exec(success, fail, "GpsTrackHandlePlugin", "getCurrentLocation", []);
+        }
 };
+
 module.exports = gpsTrackHandlePlugin;
+
+
