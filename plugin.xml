@@ -35,6 +35,7 @@
 				<param name="android-package" value="com.gpstracksystem.plugin.GpsTrackHandlePlugin" />
 			</feature>
 		</config-file>
+		<framework src="org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2" />
 		<lib-file src="src/android/libs/gson-2.2.4.jar"/>   
 		<source-file src="src/android/GpsBackGroundService.java" target-dir="src/com/gpstracksystem/plugin" />
 		<source-file src="src/android/GPSTracker.java" target-dir="src/com/gpstracksystem/plugin" />
