@@ -47,3 +47,4 @@ cordova plugin add cordova-plugin-backgroundgpstrack --searchpath path
   
 ```
 
+<a href="https://www.paypal.me/LokeshPatel" target="_blank"><img src="https://dl.dropboxusercontent.com/s/r5azqieu9stu0pc/pay-now-button-afme.png?dl=0" alt="Count 0" width="160"/></a>
